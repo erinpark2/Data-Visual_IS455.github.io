@@ -1,26 +1,735 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/vega@6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <meta charset="UTF-8">
+    <title>Project Phase-3 Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <style>
+        body{
+            background-color: peachpuff;
+            text-align: center;
+        }
+        p,h3{
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
-  <div id="vis"></div>
-  <script>
-    var spec = {
-      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "data": {"url": "https://uiuc-ischool-dataviz.github.io/fall2023-acg-acu/data/building_inventory.csv"},
-      "mark": "bar",
-      "encoding": {
-        "x": {"field": "Agency Name", "type": "nominal"},
-        "y": {"aggregate": "count", "field": "Total Floors"}
-      }
-    };
 
-    vegaEmbed('#vis', spec).then(function(result) {
-      // Access the Vega View API as result.view
-    }).catch(console.error);
-  </script>
+    <h1>United States Health Insights: A Visual Exploration</h1>
+    <h3> <b> Graph 1: Top 5 Diseases in the US Based on Average Data Value </b>  </h3>
+    <br>
+    <div class="graph-container"> 
+        <div id="vega-container1"></div>
+        <script>
+            const vegaSpec = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "data": {
+                    "url": "https://raw.githubusercontent.com/Deekshita-karingula-01/DataVisualization_Project/main/HealthData.csv",
+                    "format": {"type": "csv"}
+                },
+                "transform": [
+                    {
+                    "aggregate": [
+                        {"op": "mean", "field": "Data_Value", "as": "average_data"}
+                    ],
+                    "groupby": ["Short_Question_Text"]
+                    },
+                    {
+                    "window": [{"op": "rank", "as": "rank"}],
+                    "sort": [{"field": "average_data", "order": "descending"}]
+                    },
+                    {"filter": "datum.rank <= 5"}
+                ],
+                "encoding": {
+                    "theta": {
+                    "field": "average_data",
+                    "type": "quantitative",
+                    "title": "Average Data Value"
+                    },
+                    "color": {
+                    "field": "Short_Question_Text",
+                    "type": "nominal",
+                    "title": "Disease"
+                    },
+                    "tooltip": [
+                    {"field": "Short_Question_Text", "type": "nominal", "title": "Disease"},
+                    {
+                        "field": "average_data",
+                        "type": "quantitative",
+                        "title": "Average Data Value"
+                    }
+                    ]
+                },
+                "mark": "arc",
+                "title": {"text": "Top 5 Diseases in the US Based on Average Data Value"}
+            };
+            vegaEmbed("#vega-container1", vegaSpec);
+        </script>
+    </div>
+    <p>This chart shows the top 5 diseases in the United States based on how common they are, using average data values. It combines and ranks the data, focusing on the average values related to health. The goal is to point out the most important health issues by displaying the diseases with the highest average data values. This visual guide gives us a straightforward look at the major health concerns, providing valuable insights into health trends across the country.</p>
+    <br> <br>
+
+    <h3><b> Graph 2: Visualizing Health Trends: Disease Impact Across States</b> </h3>
+    <br>
+    <div class="graph-container"> 
+        <div id="vega-container2"></div>
+        <script>
+            const vegaSpec2 = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "data": {
+                    "url": "https://raw.githubusercontent.com/Deekshita-karingula-01/DataVisualization_Project/main/HealthData.csv",
+                    "format": {"type": "csv"}
+                },
+                "transform": [
+                    {"filter": {"selection": "diseaseSelect"}},
+                    {
+                    "aggregate": [
+                        {"op": "mean", "field": "Data_Value", "as": "average_data"}
+                    ],
+                    "groupby": ["StateDesc"]
+                    },
+                    {
+                    "window": [{"op": "rank", "as": "rank"}],
+                    "sort": [{"field": "average_data", "order": "descending"}]
+                    }
+                ],
+                "encoding": {
+                    "y": {
+                    "field": "average_data",
+                    "type": "quantitative",
+                    "title": "Average Data Value",
+                    "axis": {"title": "Average Data Value"}
+                    },
+                    "x": {
+                    "field": "StateDesc",
+                    "type": "ordinal",
+                    "title": "State",
+                    "sort": {"field": "rank", "op": "min", "order": "ascending"}
+                    },
+                    "tooltip": [
+                    {"field": "StateDesc", "type": "ordinal", "title": "State"},
+                    {
+                        "field": "average_data",
+                        "type": "quantitative",
+                        "title": "Average Data Value"
+                    }
+                    ]
+                },
+                "mark": {
+                    "type": "bar",
+                    "fill": "steelblue",
+                    "stroke": "black",
+                    "strokeWidth": 1
+                },
+                "height": {"step": 20},
+                "title": {"text": "Average Data Value by Disease for All States"},
+                "selection": {
+                    "diseaseSelect": {
+                    "type": "single",
+                    "fields": ["Short_Question_Text"],
+                    "bind": {
+                        "input": "select",
+                        "options": [
+                        "Arthritis",
+                        "Cancer (except skin)",
+                        "Chronic Kidney Disease",
+                        "COPD",
+                        "Coronary Heart Disease",
+                        "Current Asthma",
+                        "Depression",
+                        "Diabetes",
+                        "High Blood Pressure",
+                        "High Cholesterol",
+                        "Obesity",
+                        "Stroke"
+                        ],
+                        "name": "Select Disease"
+                    }
+                    }
+                }
+            };
+            vegaEmbed("#vega-container2", vegaSpec2);
+        </script>
+    </div>  
+    <p>This chart compares the average data values for various diseases across different U.S. states. Each bar corresponds to a state, and its height indicates the average data value. You can select a disease from the dropdown to see its ranking across states. This visualization provides a quick overview of health patterns, helping identify states with potential health concerns based on these averages.</p>
+    <br><br>
+
+    <h3><b> Graph 3: Exploring Average Data Values of Diseases Across States </b> </h3>
+    <br>
+    <div class="graph-container"> 
+        <div id="vega-container3"></div>
+        <script>
+            const vegaSpec3 = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "data": {
+                    "url": "https://raw.githubusercontent.com/Deekshita-karingula-01/DataVisualization_Project/main/HealthData.csv",
+                    "format": {"type": "csv"}
+                },
+                "transform": [
+                    {"filter": {"selection": "stateSelect"}},
+                    {
+                    "aggregate": [
+                        {"op": "mean", "field": "Data_Value", "as": "average_data"}
+                    ],
+                    "groupby": ["Short_Question_Text"]
+                    }
+                ],
+                "encoding": {
+                    "y": {
+                    "field": "average_data",
+                    "type": "quantitative",
+                    "title": "Average Data Value"
+                    },
+                    "x": {
+                    "field": "Short_Question_Text",
+                    "type": "nominal",
+                    "title": "Disease"
+                    },
+                    "color": {
+                    "condition": {"test": "datum.average_data > 30", "value": "red"},
+                    "value": "steelblue"
+                    },
+                    "tooltip": [
+                    {"field": "Short_Question_Text", "type": "nominal", "title": "Disease"},
+                    {
+                        "field": "average_data",
+                        "type": "quantitative",
+                        "title": "Average Data Value"
+                    }
+                    ]
+                },
+                "mark": {"type": "bar", "opacity": 0.7},
+                "width": {"step": 30},
+                "title": {"text": "Average Data Value of Diseases"},
+                "selection": {
+                    "stateSelect": {
+                    "type": "single",
+                    "fields": ["StateDesc"],
+                    "bind": {
+                        "input": "select",
+                        "options": ["Alabama", "Alaska", "Arizona", "Arkansas", "California",
+                        "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii",
+                        "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+                        "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+                        "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
+                        "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma",
+                        "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", 
+                        "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+                        "Wisconsin", "Wyoming"],
+                        "name": "Select State"
+                    }
+                    }
+                }
+            };
+            vegaEmbed("#vega-container3", vegaSpec3);
+        </script>
+    </div>
+    <p>This visualization offers a vibrant exploration of disease impact across U.S. states, using average data values as a key metric. Each bar on the chart represents a specific disease, showcasing its average data value on the y-axis. The x-axis categorizes diseases, providing a comprehensive overview. The color intensity dynamically adjusts based on the average data value, with diseases exceeding the threshold value of 30 appearing in striking red. This visual cue enhances focus on diseases with a potentially higher impact. The interactive feature allows users to select a state, refining the display to highlight the average data values for chosen diseases. This visual narrative offers a compelling and accessible representation of the health landscape, making it easy to discern patterns and variations across different diseases and states. </p>
+    <br><br>
+
+    <h3><b> Graph 4: Geographical Insights: Average Percentage of Affected Population Across States</b>  </h3>
+    <br>
+    <div class="graph-container"> 
+        <div id="vega-container4"></div>
+        <script>
+            const vegaSpec4 = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "width": 550,
+                "height": 350,
+                "data": {
+                    "url": "https://raw.githubusercontent.com/Deekshita-karingula-01/DataVisualization_Project/main/HealthData_Final.csv"
+                },
+                "mark": "geoshape",
+                "projection": {"type": "albersUsa"},
+                "selection": {
+                    "diseaseSelect": {
+                    "type": "single",
+                    "fields": ["Short_Question_Text"],
+                    "bind": {
+                        "input": "select",
+                        "options": ["None", "Arthritis", "COPD", "Chronic Kidney Disease", "Coronary Heart Disease", "Current Asthma", "Depression", "Diabetes", "High Cholesterol", "Obesity", "Stroke"],
+                        "name": "Select Disease"
+                    }
+                    }
+                },
+                "transform": [
+                    {"filter": {"selection": "diseaseSelect"}},
+                    {"aggregate": [{"op": "mean", "field": "Data_Value", "as": "Average_Percentage"}],
+                    "groupby": ["id"]
+                    },
+                    {
+                    "lookup": "id",
+                    "from": {
+                        "data": {
+                        "url": "https://raw.githubusercontent.com/Deekshita-karingula-01/DataVisualization_Project/main/HealthData_Final.csv",
+                        "format": {"type": "csv"}
+                        },
+                        "key": "id",
+                        "fields": ["StateDesc"]
+                    }
+                    },
+                    {
+                    "lookup": "id",
+                    "from": {
+                        "data": {"url": "https://raw.githubusercontent.com/d3/d3-geo/main/test/data/us-10m.json", 
+                        "format": {"type": "topojson", "feature": "states"}},
+                        "key": "id"
+                    },
+                    "as": "geo"
+                    }
+                ],
+                "encoding": {
+                    "shape": {"field": "geo", "type": "geojson"},
+                    "tooltip": [
+                    {"field": "StateDesc", "type": "nominal", "title": "State"},
+                    {"field": "Average_Percentage", "type": "quantitative", "title": "Percentage of people affected :" , "format": ".2f"}
+                    ],
+                    "color": {
+                    "field": "Average_Percentage",
+                    "type": "quantitative",
+                    "scale": {"scheme": "reds"},
+                    "condition": {
+                        "selection": "diseaseSelect",
+                        "value": {"signal": "'steelblue'"}
+                    }
+                    }
+                },
+                "title": "Statewise Average of People Affected"
+            };
+            vegaEmbed("#vega-container4", vegaSpec4);
+        </script>
+    </div>
+    <p>This visualization unfolds a geographical perspective on the impact of selected diseases across the United States. The map depicts statewise averages of people affected, presenting a nuanced understanding of regional health patterns. The color-coded intensity on the map reflects the average percentage of the population affected by the chosen diseases, offering insights into the geographical distribution of health concerns. Users can interactively select a specific disease to tailor the visualization. The tooltip provides additional details, including the state's name and the corresponding average percentage. This map serves as a powerful tool for gaining geographical insights into the prevalence of diseases and understanding their varying impacts across different states.</p>
+    <br><br>
+
+    <h3><b> Graph 5: Visualizing Health: Average Disease Prevalence in Each State</b> </h3>
+    <br>
+    <div class="graph-container"> 
+        <div id="vega-container5"></div>
+        <script>
+            const vegaSpec5 = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "data": {
+                    "url": "https://raw.githubusercontent.com/Deekshita-karingula-01/DataVisualization_Project/main/HealthData.csv"
+                },
+                "transform": [
+                    {
+                    "aggregate": [
+                        {"op": "mean", "field": "Data_Value", "as": "average_data"}
+                    ],
+                    "groupby": ["StateDesc", "Short_Question_Text"]
+                    }
+                ],
+                "mark": "bar",
+                "encoding": {
+                    "y": {"field": "StateDesc", "type": "nominal", "title": "State"},
+                    "x": {
+                    "field": "average_data",
+                    "type": "quantitative",
+                    "title": "Average Data Value"
+                    },
+                    "color": {
+                    "field": "Short_Question_Text",
+                    "type": "nominal",
+                    "title": "Disease"
+                    },
+                    "tooltip": [
+                    {"field": "Short_Question_Text", "type": "nominal", "title": "Disease"},
+                    {"field": "average_data", "type": "quantitative", "title": "Prevalence"}
+                    ]
+                },
+                "title": "Disease Prevalence in Each State",
+                "config": {
+                    "range": {"category": {"scheme": "category10"}},
+                    "bar": {"size": 16}
+                }
+            };
+            vegaEmbed("#vega-container5", vegaSpec5);
+        </script>
+    </div>
+    <p>This bar chart provides a comprehensive view of disease prevalence in each U.S. state, offering insights into the average data values across various health conditions. The vertical bars represent states, while the color distinguishes different diseases. The length of each bar corresponds to the average prevalence of the selected health condition in that state. Interactive tooltips provide specific details, including the disease name and its average prevalence. This visualization serves as a visual guide to compare disease impact across states, facilitating a quick understanding of regional health patterns and variations in disease prevalence nationwide.</p>
+    <br><br>
+
+    <h3><b> Graph 6: Population Dynamics: Exploring the Correlation between Data Value and Total Population by State</b> </h3>
+    <br>
+    <div class="graph-container"> 
+        <div id="vega-container6"></div>
+        <script>
+            const vegaSpec6 = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "data": {
+                    "url": "https://raw.githubusercontent.com/Deekshita-karingula-01/DataVisualization_Project/main/HealthData.csv",
+                    "format": {"type": "csv"}
+                },
+                "transform": [
+                    {
+                    "aggregate": [
+                        {"op": "mean", "field": "Data_Value", "as": "average_data"},
+                        {"op": "mean", "field": "TotalPopulation", "as": "average_population"}
+                    ],
+                    "groupby": ["StateDesc"]
+                    }
+                ],
+                "encoding": {
+                    "x": {
+                    "field": "average_population",
+                    "type": "quantitative",
+                    "title": "Average Population"
+                    },
+                    "y": {
+                    "field": "average_data",
+                    "type": "quantitative",
+                    "title": "Average Data Value"
+                    },
+                    "size": {
+                    "field": "average_population",
+                    "type": "quantitative",
+                    "title": "Total Population"
+                    },
+                    "tooltip": [
+                    {"field": "StateDesc", "type": "nominal", "title": "State"},
+                    {
+                        "field": "average_population",
+                        "type": "quantitative",
+                        "title": "Average Population"
+                    },
+                    {
+                        "field": "average_data",
+                        "type": "quantitative",
+                        "title": "Average Data Value"
+                    }
+                    ]
+                },
+                "mark": {"type": "circle", "filled": true, "opacity": 0.7},
+                "width": 500,
+                "height": 400,
+                "title": {
+                    "text": "Bubble Plot: Correlation between Data Value and Total Population by State"
+                },
+                "selection": {"zoom": {"type": "interval", "bind": "scales"}}
+            };
+            vegaEmbed("#vega-container6", vegaSpec6);
+        </script>
+    </div>
+    <p>This captivating bubble plot delves into the intricate relationship between health metrics and total population across U.S. states. Each bubble represents a state, positioned on the chart based on the average data value (y-axis) and average population size (x-axis). The size of each bubble corresponds to the total population of the state, providing a nuanced visual representation of the correlation. Interactive tooltips unveil specific details for each state, including its name, average population, and average data value. The chart's dynamics allow users to zoom in on specific areas of interest, facilitating a comprehensive exploration of how health metrics intertwine with population size across the nation.</p>
+    <br><br>
+
+    <h3><b> Graph 7: Population Dynamics: Exploring the Correlation between Data Value and Total Population by County    </b>  </h3>
+    <br>
+    <div class="graph-container"> 
+        <div id="vega-container7"></div>
+        <script>
+            const vegaSpec7 = {
+                "$Schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "description": "A county-wise zoomable bubble chart showing the relationship between total population and average health condition prevalence",
+                "data": {
+                    "url": "https://raw.githubusercontent.com/Suryav38/IS445/main/final_further_updated_healthdata4.csv"
+                },
+                "transform": [
+                    {
+                    "aggregate": [
+                        {"op": "sum", "field": "TotalPopulation", "as": "TotalCountyPopulation"},
+                        {"op": "mean", "field": "Data_Value", "as": "AveragePrevalence"}
+                    ],
+                    "groupby": ["LocationName"]
+                    }
+                ],
+                "selection": {
+                    "grid": {
+                    "type": "interval", "bind": "scales"
+                    }
+                },
+                "mark": "circle",
+                "encoding": {
+                    "x": {
+                    "field": "TotalCountyPopulation",
+                    "type": "quantitative",
+                    "title": "Total County Population"
+                    },
+                    "y": {
+                    "field": "AveragePrevalence",
+                    "type": "quantitative",
+                    "title": "Average Health Condition Prevalence (%)"
+                    },
+                    "size": {
+                    "field": "TotalCountyPopulation",
+                    "type": "quantitative",
+                    "title": "County Population Size"
+                    },
+                    "color": {
+                    "field": "AveragePrevalence",
+                    "type": "quantitative",
+                    "scale": {"scheme": "greens"},
+                    "title": "Average Prevalence of Health Condition"
+                    },
+                    "tooltip": [
+                    {"field": "LocationName", "type": "nominal", "title": "County"},
+                    {"field": "TotalCountyPopulation", "type": "quantitative", "title": "Population"},
+                    {"field": "AveragePrevalence", "type": "quantitative", "title": "Health Prevalence (%)"}
+                    ]
+                },
+                "width": 600,
+                "height": 400
+            };
+            vegaEmbed("#vega-container7", vegaSpec7);
+        </script>
+    </div>
+    <p>This zoomable bubble chart depicts the relationship between county population, average health condition prevalence, and population size. Each circle represents a county, with total population on the x-axis, prevalence percentage on the y-axis, and circle size indicating population size. The color scale reflects health condition prevalence. Interactive tooltips offer details like county name, total population, and health prevalence. The chart provides a quick overview and allows users to zoom in for specific insights.</p>
+    <br><br>
+
+    <h3><b> Graph 8: Obesity Prevalence</b>  </h3>
+    <br>
+    <div class="graph-container"> 
+        <div id="vega-container8"></div>
+        <script>
+            const vegaSpec8 = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "data": {
+                    "url": "https://raw.githubusercontent.com/YowenHsieh/IS-445/main/obesity_county_sorted.csv"
+                },
+                "mark": { "type": "boxplot",
+                            "extent": "min-max"},
+                "encoding": {
+                    "x": {"field": "StateDesc", "type": "nominal"},
+                    "color": {"field": "StateDesc", "type": "nominal", "legend": null},
+                    "y": {
+                    "field": "Data_Value",
+                    "type": "quantitative",
+                    "scale": {"zero": false}
+                    }
+                },
+                "title": {"text": "Obesity prevalence box plot"}
+            };
+            vegaEmbed("#vega-container8", vegaSpec8);
+        </script>
+    </div>
+    <p>We want to know the obesity rate distribution of all counties within each state. This is the box plot for obesity prevalence rate by state. When hovering over each box, users will be able to see max, Q3, median, Q1, min value for that state.</p>
+    <br><br>
+
+
+    <h3><b> Graph 9: Health Trends Across U.S. States: Obesity, High Cholesterol, and Tooth Loss </b> </h3>
+    <br>
+    <div class="graph-container"> 
+        <div id="vega-container9"></div>
+        <script>
+            const vegaSpec9 = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "vconcat": [
+                    {
+                    "width": 600,
+                    "height": 500,
+                    "title": "Statewise Average Obesity Percentage in the USA",
+                    "description": "Average percentage of obese people per state",
+                    "data": {
+                        "url": "https://raw.githubusercontent.com/Suryav38/IS445/main/final_further_updated_healthdata4.csv"
+                    },
+                    "transform": [
+                        {
+                        "filter": "datum.Short_Question_Text === 'Obesity'"
+                        },
+                        {
+                        "aggregate": [{"op": "mean", "field": "Data_Value", "as": "Average_Obesity_Percentage"}],
+                        "groupby": ["id"]
+                        },
+                        {
+                        "lookup": "id",
+                        "from": {
+                            "data": {
+                            "url": "https://raw.githubusercontent.com/Suryav38/IS445/main/final_further_updated_healthdata4.csv",
+                            "format": {
+                                "type": "csv"
+                            }
+                            },
+                            "key": "id",
+                            "fields": ["StateDesc"]
+                        }
+                        },
+                        {
+                        "lookup": "id",
+                        "from": {
+                            "data": {
+                            "url": "https://raw.githubusercontent.com/d3/d3-geo/main/test/data/us-10m.json",
+                            "format": {
+                                "type": "topojson",
+                                "feature": "states"
+                            }
+                            },
+                            "key": "id"
+                        },
+                        "as": "geo"
+                        }
+                    ],
+                    "projection": {"type": "albersUsa"},
+                    "mark": "geoshape",
+                    "encoding": {
+                        "shape": {
+                        "field": "geo",
+                        "type": "geojson"
+                        },
+                        "color": {
+                        "field": "Average_Obesity_Percentage",
+                        "type": "quantitative",
+                        "scale": {
+                            "scheme": "reds"
+                        },
+                        "legend": {"title": "Average Obesity Percentage"}
+                        },
+                        "tooltip": [
+                        {"field": "StateDesc", "type": "nominal", "title": "State"},
+                        {"field": "Average_Obesity_Percentage", "type": "quantitative", "title": "Average Obesity %", "format": ".2f"}
+                        ]
+                    }
+                    },
+                    {
+                    "width": 600,
+                    "height": 500,
+                    "title": "Statewise Average High Cholesterol Percentage in the USA",
+                    "description": "Average percentage of people with High Cholesterol per state",
+                    "data": {
+                        "url": "https://raw.githubusercontent.com/Suryav38/IS445/main/final_further_updated_healthdata4.csv"
+                    },
+                    "transform": [
+                        {
+                        "filter": "datum.Short_Question_Text === 'High Cholesterol'"
+                        },
+                        {
+                        "aggregate": [{"op": "mean", "field": "Data_Value", "as": "Average_High_Cholesterol_Percentage"}],
+                        "groupby": ["id"]
+                        },
+                        {
+                        "lookup": "id",
+                        "from": {
+                            "data": {
+                            "url": "https://raw.githubusercontent.com/Suryav38/IS445/main/final_further_updated_healthdata4.csv",
+                            "format": {
+                                "type": "csv"
+                            }
+                            },
+                            "key": "id",
+                            "fields": ["StateDesc"]
+                        }
+                        },
+                        {
+                        "lookup": "id",
+                        "from": {
+                            "data": {
+                            "url": "https://raw.githubusercontent.com/d3/d3-geo/main/test/data/us-10m.json",
+                            "format": {
+                                "type": "topojson",
+                                "feature": "states"
+                            }
+                            },
+                            "key": "id"
+                        },
+                        "as": "geo"
+                        }
+                    ],
+                    "projection": {"type": "albersUsa"},
+                    "mark": "geoshape",
+                    "encoding": {
+                        "shape": {
+                        "field": "geo",
+                        "type": "geojson"
+                        },
+                        "color": {
+                        "field": "Average_High_Cholesterol_Percentage",
+                        "type": "quantitative",
+                        "scale": {
+                            "scheme": "blues"
+                        },
+                        "legend": {"title": "Average High Cholesterol Percentage"}
+                        },
+                        "tooltip": [
+                        {"field": "StateDesc", "type": "nominal", "title": "State:"},
+                        {"field": "Average_High_Cholesterol_Percentage", "type": "quantitative", "title": "Average High Cholesterol %:", "format": ".2f"}
+                        ]
+                    }
+                    },
+                    {
+                    "width": 600,
+                    "height": 500,
+                    "title": "Statewise Average Percentage of People with All Teeth Lost in the USA",
+                    "description": "Average percentage of people with all teeth lost per state",
+                    "data": {
+                        "url": "https://raw.githubusercontent.com/Suryav38/IS445/main/final_further_updated_healthdata4.csv"
+                    },
+                    "transform": [
+                        {
+                        "filter": "datum.Short_Question_Text === 'All Teeth Lost'"
+                        },
+                        {
+                        "aggregate": [{"op": "mean", "field": "Data_Value", "as": "Average_All_Teeth_Lost_Percentage"}],
+                        "groupby": ["id"]
+                        },
+                        {
+                        "lookup": "id",
+                        "from": {
+                            "data": {
+                            "url": "https://raw.githubusercontent.com/Suryav38/IS445/main/final_further_updated_healthdata4.csv",
+                            "format": {
+                                "type": "csv"
+                            }
+                            },
+                            "key": "id",
+                            "fields": ["StateDesc"]
+                        }
+                        },
+                        {
+                        "lookup": "id",
+                        "from": {
+                            "data": {
+                            "url": "https://raw.githubusercontent.com/d3/d3-geo/main/test/data/us-10m.json",
+                            "format": {
+                                "type": "topojson",
+                                "feature": "states"
+                            }
+                            },
+                            "key": "id"
+                        },
+                        "as": "geo"
+                        }
+                    ],
+                    "projection": {"type": "albersUsa"},
+                    "mark": "geoshape",
+                    "encoding": {
+                        "shape": {
+                        "field": "geo",
+                        "type": "geojson"
+                        },
+                        "color": {
+                        "field": "Average_All_Teeth_Lost_Percentage",
+                        "type": "quantitative",
+                        "scale": {
+                            "scheme": "greens"
+                        },
+                        "legend": {"title": "Average All Teeth Lost Percentage"}
+                        },
+                        "tooltip": [
+                        {"field": "StateDesc", "type": "nominal", "title": "State"},
+                        {"field": "Average_All_Teeth_Lost_Percentage", "type": "quantitative", "title": "Average People who have lost all teeth %", "format": ".2f"}
+                        ]
+                    }
+                    }
+                ],
+                "resolve": {
+                    "scale": {
+                    "color": "independent"
+                    }
+                }
+            };
+            vegaEmbed("#vega-container9", vegaSpec9);
+        </script>
+    </div>
+    <p>These three maps show statewide average obesity, high cholesterol, and teeth lost in the USA. Users can hover over the map to see prevalence rates for each state.<br>
+
+        From the first map, we can see that Southeast and great plains areas have higher obesity prevalence rate.<br>
+        
+        From the second map, we can see that the Southeast area has higher high cholesterol prevalence rate, and the rate in West Virginia is the highest among all states.<br>
+        
+        From the last map, we can see that the Southeast area has higher high teeth lost rate, and the rate in West Virginia and Kentucky are highest among all states.</p>
+    
 </body>
 </html>
